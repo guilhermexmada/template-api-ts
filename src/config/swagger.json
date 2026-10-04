@@ -1,0 +1,593 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Template API TS",
+    "version": "1.0.0",
+    "description": "Template de API RESTful com Node.js, Express, TypeScript, Sequelize e PostgreSQL, contendo o CRUD de usuários como exemplo."
+  },
+  "servers": [
+    {
+      "url": "/api",
+      "description": "Servidor local"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Health",
+      "description": "Verificação de funcionamento da API"
+    },
+    {
+      "name": "Usuários",
+      "description": "CRUD de usuários"
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": ["Health"],
+        "summary": "Verificar status da API",
+        "description": "Retorna o status do servidor e o horário atual.",
+        "responses": {
+          "200": {
+            "description": "Servidor em funcionamento",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                },
+                "example": {
+                  "status": "OK",
+                  "mensagem": "Servidor rodando com sucesso.",
+                  "timestamp": "2026-10-03T12:00:00.000Z"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/usuarios": {
+      "get": {
+        "tags": ["Usuários"],
+        "summary": "Listar usuários",
+        "description": "Retorna todos os usuários cadastrados, ordenados pelo ID.",
+        "responses": {
+          "200": {
+            "description": "Lista de usuários",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Usuario"
+                  }
+                },
+                "example": [
+                  {
+                    "id": 1,
+                    "nome": "Ana Silva",
+                    "email": "ana.silva@email.com",
+                    "telefone": "(11) 98765-4321",
+                    "dataNascimento": "2000-05-15",
+                    "ativo": true,
+                    "createdAt": "2026-10-03T12:00:00.000Z",
+                    "updatedAt": "2026-10-03T12:00:00.000Z"
+                  }
+                ]
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                },
+                "example": {
+                  "erro": "Erro ao listar usuários.",
+                  "detalhe": "connect ECONNREFUSED 127.0.0.1:5432"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Usuários"],
+        "summary": "Cadastrar usuário",
+        "description": "Cadastra um novo usuário. O e-mail é convertido para minúsculas e deve ser único. Os campos telefone e dataNascimento são opcionais, e ativo assume true quando não informado.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UsuarioInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Usuário cadastrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Usuario"
+                },
+                "example": {
+                  "id": 1,
+                  "nome": "Ana Silva",
+                  "email": "ana.silva@email.com",
+                  "telefone": "(11) 98765-4321",
+                  "dataNascimento": "2000-05-15",
+                  "ativo": true,
+                  "createdAt": "2026-10-03T12:00:00.000Z",
+                  "updatedAt": "2026-10-03T12:00:00.000Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dados inválidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                },
+                "examples": {
+                  "nomeAusente": {
+                    "summary": "Nome ausente",
+                    "value": {
+                      "erro": "O campo nome é obrigatório e deve ter até 100 caracteres."
+                    }
+                  },
+                  "emailInvalido": {
+                    "summary": "E-mail inválido",
+                    "value": {
+                      "erro": "O campo email é obrigatório e deve conter um e-mail válido."
+                    }
+                  },
+                  "telefoneInvalido": {
+                    "summary": "Telefone inválido",
+                    "value": {
+                      "erro": "O campo telefone deve ser um texto de até 20 caracteres."
+                    }
+                  },
+                  "dataInvalida": {
+                    "summary": "Data de nascimento inválida",
+                    "value": {
+                      "erro": "O campo dataNascimento deve ser uma data válida no formato AAAA-MM-DD."
+                    }
+                  },
+                  "ativoInvalido": {
+                    "summary": "Ativo inválido",
+                    "value": {
+                      "erro": "O campo ativo deve ser verdadeiro ou falso."
+                    }
+                  },
+                  "emailDuplicado": {
+                    "summary": "E-mail já cadastrado",
+                    "value": {
+                      "erro": "Já existe um usuário cadastrado com este e-mail."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                },
+                "example": {
+                  "erro": "Erro ao cadastrar usuário.",
+                  "detalhe": "connect ECONNREFUSED 127.0.0.1:5432"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/usuarios/{id}": {
+      "get": {
+        "tags": ["Usuários"],
+        "summary": "Buscar usuário por ID",
+        "description": "Retorna os dados de um usuário específico.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UsuarioId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Usuário encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Usuario"
+                },
+                "example": {
+                  "id": 1,
+                  "nome": "Ana Silva",
+                  "email": "ana.silva@email.com",
+                  "telefone": "(11) 98765-4321",
+                  "dataNascimento": "2000-05-15",
+                  "ativo": true,
+                  "createdAt": "2026-10-03T12:00:00.000Z",
+                  "updatedAt": "2026-10-03T12:00:00.000Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ID inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                },
+                "example": {
+                  "erro": "O ID informado deve ser um número inteiro positivo."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Usuário não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                },
+                "example": {
+                  "erro": "Usuário não encontrado."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                },
+                "example": {
+                  "erro": "Erro ao buscar usuário.",
+                  "detalhe": "connect ECONNREFUSED 127.0.0.1:5432"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["Usuários"],
+        "summary": "Atualizar usuário",
+        "description": "Substitui todos os dados de um usuário existente. Campos opcionais não enviados voltam ao valor padrão.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UsuarioId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UsuarioInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Usuário atualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Usuario"
+                },
+                "example": {
+                  "id": 1,
+                  "nome": "Ana Silva Souza",
+                  "email": "ana.silva@email.com",
+                  "telefone": "(11) 98765-4321",
+                  "dataNascimento": "2000-05-15",
+                  "ativo": false,
+                  "createdAt": "2026-10-03T12:00:00.000Z",
+                  "updatedAt": "2026-10-04T09:30:00.000Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dados inválidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                },
+                "examples": {
+                  "idInvalido": {
+                    "summary": "ID inválido",
+                    "value": {
+                      "erro": "O ID informado deve ser um número inteiro positivo."
+                    }
+                  },
+                  "nomeAusente": {
+                    "summary": "Nome ausente",
+                    "value": {
+                      "erro": "O campo nome é obrigatório e deve ter até 100 caracteres."
+                    }
+                  },
+                  "emailInvalido": {
+                    "summary": "E-mail inválido",
+                    "value": {
+                      "erro": "O campo email é obrigatório e deve conter um e-mail válido."
+                    }
+                  },
+                  "telefoneInvalido": {
+                    "summary": "Telefone inválido",
+                    "value": {
+                      "erro": "O campo telefone deve ser um texto de até 20 caracteres."
+                    }
+                  },
+                  "dataInvalida": {
+                    "summary": "Data de nascimento inválida",
+                    "value": {
+                      "erro": "O campo dataNascimento deve ser uma data válida no formato AAAA-MM-DD."
+                    }
+                  },
+                  "ativoInvalido": {
+                    "summary": "Ativo inválido",
+                    "value": {
+                      "erro": "O campo ativo deve ser verdadeiro ou falso."
+                    }
+                  },
+                  "emailDuplicado": {
+                    "summary": "E-mail em uso",
+                    "value": {
+                      "erro": "Já existe um usuário cadastrado com este e-mail."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Usuário não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                },
+                "example": {
+                  "erro": "Usuário não encontrado."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                },
+                "example": {
+                  "erro": "Erro ao atualizar usuário.",
+                  "detalhe": "connect ECONNREFUSED 127.0.0.1:5432"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Usuários"],
+        "summary": "Excluir usuário",
+        "description": "Remove um usuário pelo ID.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UsuarioId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Usuário excluído",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Mensagem"
+                },
+                "example": {
+                  "mensagem": "Usuário excluído com sucesso."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ID inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                },
+                "example": {
+                  "erro": "O ID informado deve ser um número inteiro positivo."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Usuário não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                },
+                "example": {
+                  "erro": "Usuário não encontrado."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                },
+                "example": {
+                  "erro": "Erro ao excluir usuário.",
+                  "detalhe": "connect ECONNREFUSED 127.0.0.1:5432"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "UsuarioId": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "ID do usuário",
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "example": 1
+        }
+      }
+    },
+    "schemas": {
+      "Usuario": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "nome": {
+            "type": "string",
+            "example": "Ana Silva"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "ana.silva@email.com"
+          },
+          "telefone": {
+            "type": "string",
+            "nullable": true,
+            "example": "(11) 98765-4321"
+          },
+          "dataNascimento": {
+            "type": "string",
+            "format": "date",
+            "nullable": true,
+            "example": "2000-05-15"
+          },
+          "ativo": {
+            "type": "boolean",
+            "example": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-03T12:00:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-03T12:00:00.000Z"
+          }
+        }
+      },
+      "UsuarioInput": {
+        "type": "object",
+        "required": ["nome", "email"],
+        "properties": {
+          "nome": {
+            "type": "string",
+            "maxLength": 100,
+            "example": "Ana Silva"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 150,
+            "example": "ana.silva@email.com"
+          },
+          "telefone": {
+            "type": "string",
+            "maxLength": 20,
+            "nullable": true,
+            "example": "(11) 98765-4321"
+          },
+          "dataNascimento": {
+            "type": "string",
+            "format": "date",
+            "nullable": true,
+            "example": "2000-05-15"
+          },
+          "ativo": {
+            "type": "boolean",
+            "default": true,
+            "example": true
+          }
+        }
+      },
+      "Health": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "OK"
+          },
+          "mensagem": {
+            "type": "string",
+            "example": "Servidor rodando com sucesso."
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-03T12:00:00.000Z"
+          }
+        }
+      },
+      "Mensagem": {
+        "type": "object",
+        "properties": {
+          "mensagem": {
+            "type": "string",
+            "example": "Usuário excluído com sucesso."
+          }
+        }
+      },
+      "Erro": {
+        "type": "object",
+        "properties": {
+          "erro": {
+            "type": "string",
+            "example": "Descrição do erro."
+          },
+          "detalhe": {
+            "type": "string",
+            "example": "Detalhe técnico do erro interno."
+          }
+        }
+      }
+    }
+  }
+}
