@@ -1,7 +1,5 @@
 # Guia de CI/CD — Template API TS
 
-Oct 3, 2026 · @Shimada
-
 ## Visão geral
 
 Este guia adiciona CI/CD ao Template API TS: verificações automáticas antes de cada commit e a cada push, mais a API e o PostgreSQL rodando em containers Docker. Como o template é a base de futuras APIs, o mesmo passo a passo serve para qualquer API TypeScript com PostgreSQL feita a partir dele.
